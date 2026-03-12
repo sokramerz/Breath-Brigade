@@ -1,1 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap');
 
+:root {
+  --bg-void:        #070b12;
+  --bg-surface:     #0d1520;
+  --bg-raised:      #111d2e;
+  --bg-overlay:     rgba(13, 21, 32, 0.85);
+  --accent-teal:    #00e5c3;
+  --accent-teal-dim:#00b89c;
+  --accent-blue:    #3b82f6;
+  --risk-safe:      #00e5c3;
+  --risk-moderate:  #f5c518;
+  --risk-high:      #ff7b2e;
+  --risk-critical:  #e53535;
+  --text-primary:   #e8f0fe;
+  --text-secondary: #8ca4c0;
+  --text-muted:     #3d5473;
+  --border:         rgba(59, 130, 246, 0.12);
+  --border-bright:  rgba(0, 229, 195, 0.25);
+  --glow-teal:      0 0 24px rgba(0, 229, 195, 0.25);
+  --glow-blue:      0 0 24px rgba(59, 130, 246, 0.2);
+  --font-display: 'Syne', sans-serif;
+  --font-mono:    'DM Mono', monospace;
+  --nav-height: 64px;
+  --radius-sm:  6px;
+  --radius-md:  12px;
+  --radius-lg:  20px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body, #root { height: 100%; width: 100%; overflow: hidden; }
+body {
+  background-color: var(--bg-void);
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  -webkit-font-smoothing: antialiased;
+}
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg-surface); }
+::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 4px; }
+
+.app-shell { display: flex; flex-direction: column; height: 100%; position: relative; }
+.app-main  { flex: 1; overflow: hidden; position: relative; }
+
+.glass-panel {
+  background: var(--bg-overlay);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.risk-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 4px 10px; border-radius: 99px;
+}
+.risk-safe     { color: var(--risk-safe);     background: rgba(0, 229, 195, 0.1);  border: 1px solid rgba(0, 229, 195, 0.3); }
+.risk-moderate { color: var(--risk-moderate); background: rgba(245, 197, 24, 0.1); border: 1px solid rgba(245, 197, 24, 0.3); }
+.risk-high     { color: var(--risk-high);     background: rgba(255, 123, 46, 0.1); border: 1px solid rgba(255, 123, 46, 0.3); }
+.risk-critical { color: var(--risk-critical); background: rgba(229, 53, 53, 0.1);  border: 1px solid rgba(229, 53, 53, 0.3); }
+
+@keyframes pulse-ring {
+  0%   { transform: scale(0.9); opacity: 0.8; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up { animation: fade-up 0.4s ease forwards; }
