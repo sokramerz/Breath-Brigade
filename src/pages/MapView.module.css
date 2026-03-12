@@ -1,0 +1,38 @@
+.mapPage { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--bg-void); }
+
+.mapCanvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+.mapPlaceholder {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  background: repeating-linear-gradient(
+    45deg,
+    var(--bg-surface) 0px, var(--bg-surface) 20px,
+    var(--bg-raised) 20px, var(--bg-raised) 40px
+  );
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 14px;
+}
+
+.searchBar {
+  position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
+  width: min(480px, calc(100% - 32px)); z-index: 10;
+}
+
+.riskPanel {
+  position: absolute;
+  bottom: calc(var(--nav-height) + 16px);
+  left: 16px; right: 16px; z-index: 10;
+}
+
+.legend {
+  position: absolute;
+  bottom: calc(var(--nav-height) + 16px);
+  right: 16px; z-index: 10;
+}
+
+@media (min-width: 768px) {
+  .riskPanel { left: 24px; right: auto; width: 340px; bottom: 24px; }
+  .legend    { bottom: 24px; right: 24px; }
+}
