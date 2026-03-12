@@ -7,6 +7,12 @@ import useAirQuality from "../hooks/useAirQuality";
 import useLocation from "../hooks/useLocation";
 import styles from "./MapView.module.css";
 
+/**
+ * The main screen. Renders the full-screen map canvas, floating search bar,
+ * risk card, and legend. Orchestrates the map library instance and connects
+ * the AQI + location hooks.
+ */
+
 // TODO: Install and import your map library:
 //   Option A (will most likely use this): import mapboxgl from 'mapbox-gl'
 //   Option B: import { MapContainer, TileLayer } from 'react-leaflet'
