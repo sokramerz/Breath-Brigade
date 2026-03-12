@@ -5,6 +5,13 @@ import Profile from "./pages/Profile";
 import NavBar from "./components/NavBar";
 import "./styles/globals.css";
 
+Root component. Holds the active page state and renders the correct page based on which nav tab is selected.
+
+/**
+ * Root component. Holds the active page state and renders the correct
+ * page based on which nav tab is selected.
+ */
+
 // TODO: Replace with React Router for proper routing
 // TODO: Add auth context/provider here once user login is implemented
 
