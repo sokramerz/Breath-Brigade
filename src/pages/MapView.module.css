@@ -1,0 +1,86 @@
+.mapPage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.mapCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.searchBar {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 420px;
+  z-index: 10;
+}
+
+.riskPanel {
+  position: absolute;
+  bottom: 24px;
+  left: 16px;
+  z-index: 10;
+}
+
+.legend {
+  position: absolute;
+  bottom: 24px;
+  right: 16px;
+  z-index: 10;
+}
+
+.recenterFab {
+  position: absolute;
+  bottom: 180px;
+  right: 16px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--bg-raised);
+  border: 1px solid var(--text-muted);
+  color: var(--accent-teal);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+  z-index: 10;
+}
+
+.recenterFab:hover {
+  border-color: var(--accent-teal);
+  transform: scale(1.08);
+}
+
+.dangerPulse {
+  animation: dangerPulse 2s ease-in-out infinite;
+}
+
+@keyframes dangerPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(229, 53, 53, 0); }
+  50%       { box-shadow: 0 0 0 12px rgba(229, 53, 53, 0.25); }
+  
+}
+
+.atmosphere {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 50%, var(--risk-color) 0%, transparent 70%);
+  animation: atmospherePulse 4s ease-in-out infinite;
+  z-index: 1;
+}
+
+@keyframes atmospherePulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50%       { opacity: 1;   transform: scale(1.05); }
+}
