@@ -1,4 +1,18 @@
 # Connection to PostgreSQL database
+import os
+from dotenv import load_dotenv
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
-def get_user_risk_info(user_id: int):
-    raise Exception
+load_dotenv() # loads variables from .env
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+engine = create_engine(DATABASE_URL)
+Session = sessionmaker(bind=engine)
+
+def get_db():
+    db = Session()
+    try:
+        yield db
+    finally:
+        db.close()

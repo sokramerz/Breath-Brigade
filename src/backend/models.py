@@ -1,5 +1,4 @@
 # Database table definitions (SQLAlchemy)
-import os
 from dotenv import load_dotenv
 from sqlalchemy import (
     create_engine, Column, Integer, Numeric,
@@ -9,10 +8,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy.dialects.postgresql import ARRAY
 
-load_dotenv() # loads variables from .env
-DATABASE_URL = os.getenv("DATABASE_URL")
 
-engine = create_engine(DATABASE_URL)
 Base = declarative_base()
 
 class Location(Base):
@@ -39,7 +35,7 @@ class User(Base):
     created_at = Column(DateTime, server_default=func.now())
 
     __table_args__ = (
-        CheckConstraint("username ~ '^[a-zA-Z0-9_-]'")
+        CheckConstraint("username ~ '^[a-zA-Z0-9_-]'"),
     )
 
     profile = relationship("UserProfile", back_populates="user", uselist=False)
@@ -70,7 +66,7 @@ class Alert(Base):
     zip_code = Column(Integer, ForeignKey("zip_geo.zip_code"))
 
     user = relationship("User", back_populates="alerts")
-    location = relationship("Location", back_populates="alerts")
+    location = relationship("Location", back_populates="alerts_within")
     info = relationship("AlertType", back_populates="alerts")
 
 

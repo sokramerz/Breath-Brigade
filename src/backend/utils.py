@@ -4,6 +4,9 @@ import pandas as pd
 import requests_cache
 from retry_requests import retry
 
+from sqlalchemy.orm import Session
+from .models import UserProfile
+
 
 def call_meteo(lat, lon):
     # Setup the Open-Meteo API client with cache and retry on error
@@ -40,3 +43,9 @@ def call_meteo(lat, lon):
     
     return result
 
+def get_user_risk_info(db: Session, user_id: int):
+    return db.query(
+        UserProfile.severity, UserProfile.triggers
+    ).filter(
+        UserProfile.user_id == user_id
+    ).all()
