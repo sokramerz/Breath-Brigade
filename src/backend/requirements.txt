@@ -8,3 +8,4 @@ sqlalchemy
 python-dotenv
 psycopg2-binary
 dotenv
+# will need to require python >= 3.11

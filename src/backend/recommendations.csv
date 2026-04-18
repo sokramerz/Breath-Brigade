@@ -1,0 +1,7 @@
+drivers,recommendation,sources
+"[""low_risk""]",Keep your usual controller plan and check the forecast again later.,https://www.nhlbi.nih.gov/resources/asthma-action-plan-2020
+"[""elevated_risk""]",Keep your quick-relief inhaler available and reduce exposure to the main driver.,https://www.airnow.gov/sites/default/files/2023-03/air-quality-guide-for-particle-pollution_0.pdf
+"[""high_risk""]",Follow your asthma action plan today and modify outdoor activity or exposure.,https://www.nhlbi.nih.gov/resources/asthma-action-plan-2020
+"[""very_high_risk""]",Shift activities to a cleaner or safer indoor setting and monitor closely today.,https://www.airnow.gov/sites/default/files/2023-03/air-quality-guide-for-particle-pollution_0.pdf
+"[""critical_risk""]","Treat today as a high-risk exposure day: minimize exposure, keep rescue medication ready, and use your action plan promptly if symptoms begin or worsen.",https://www.nhlbi.nih.gov/sites/default/files/publications/Asthma-Action-Plan-2020_rev_508.pdf
+"[""aqi_yellow"", ""elevated_risk|high_risk|very_high_risk|critical_risk""]",,

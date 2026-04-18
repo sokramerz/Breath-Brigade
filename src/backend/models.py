@@ -49,7 +49,7 @@ class UserProfile(Base):
     first_name = Column(String)
     last_name = Column(String)
     zip_code = Column(Integer, ForeignKey("zip_geo.zip_code"))
-    severity = Column(String) # TODO: define categories for severity and check that value is one of them
+    severity = Column(String)
     triggers = Column(ARRAY(String)) # TODO: define what the triggers can be
 
     user = relationship("User", back_populates="profile")
@@ -77,5 +77,16 @@ class AlertType(Base):
     description = Column(String)
 
     alerts = relationship("Alert", back_populates="info")
+
+
+class Recommendation(Base):
+    __tablename__ = "recommendations"
+
+    rec_id = Column(Integer, primary_key=True)
+    drivers = Column(ARRAY(String, dimensions=2)) # list of lists of drivers that trigger this recommendation, e.g. [["aqi_red", "exercise"], ["thunder_pollen"]]
+    recom = Column(String, nullable=False)
+    sources = Column(ARRAY(String))
+
+    
 
     

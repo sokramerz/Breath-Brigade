@@ -21,7 +21,8 @@ def call_meteo(lat, lon):
         "https://api.open-meteo.com/v1/forecast"
     ]
     variables = [
-        ["us_aqi"],
+        # getting parts of aqi to weigh more heavily in certain cases for risk assessment
+        ['us_aqi', 'us_aqi_ozone'],
         ["temperature_2m", "weather_code", "relative_humidity_2m"]
     ]
 
@@ -49,3 +50,5 @@ def get_user_risk_info(db: Session, user_id: int):
     ).filter(
         UserProfile.user_id == user_id
     ).all()
+
+
