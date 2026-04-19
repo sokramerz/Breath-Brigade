@@ -1,0 +1,16 @@
+drivers,recom,sources
+"[""low_risk""]",Keep your usual controller plan and check the forecast again later.,https://www.nhlbi.nih.gov/resources/asthma-action-plan-2020
+"[""elevated_risk""]",Keep your quick-relief inhaler available and reduce exposure to the main driver.,https://www.airnow.gov/sites/default/files/2023-03/air-quality-guide-for-particle-pollution_0.pdf
+"[""high_risk""]",Follow your asthma action plan today and modify outdoor activity or exposure.,https://www.nhlbi.nih.gov/resources/asthma-action-plan-2020
+"[""very_high_risk""]",Shift activities to a cleaner or safer indoor setting and monitor closely today.,https://www.airnow.gov/sites/default/files/2023-03/air-quality-guide-for-particle-pollution_0.pdf
+"[""critical_risk""]","Treat today as a high-risk exposure day: minimize exposure, keep rescue medication ready, and use your action plan promptly if symptoms begin or worsen.",https://www.nhlbi.nih.gov/sites/default/files/publications/Asthma-Action-Plan-2020_rev_508.pdf
+"[""aqi_yellow"", ""elevated_risk|high_risk|very_high_risk|critical_risk""]",Make outdoor activity shorter and less intense.,https://www.airnow.gov/sites/default/files/2023-03/air-quality-guide-for-particle-pollution_0.pdf
+"[""aqi_orange""]",Take more breaks outside and keep your quick-relief inhaler handy.,https://www.airnow.gov/sites/default/files/2023-03/air-quality-guide-for-particle-pollution_0.pdf
+"[""aqi_red|aqi_purple|aqi_maroon""]",Move long or intense activity indoors or reschedule it.,https://www.airnow.gov/sites/default/files/2023-03/air-quality-guide-for-particle-pollution_0.pdf
+"[""thunder_pollen""]","If there is high pollen in your area, stay indoors, close doors and windows, and keep your reliever with you.",https://www.healthdirect.gov.au/thunderstorm-asthma
+"[""aqi_orange|aqi_red|aqi_purple|aqi_maroon|aqi_match_moderate|aqi_match_mild""]",Use filtered or air-conditioned air if available.,https://www.epa.gov/indoor-air-quality-iaq/guide-air-cleaners-home
+"[""hot_hum_match|hot_hum_base""]","Stay cool, drink water regularly, and reduce time in heat.",https://www.cdc.gov/heat-health/hcp/clinical-overview/heat-children-asthma.html
+"[""cold_dry_base|cold_dry_match""]",Cover your nose and mouth in cold air and warm up before exertion.,https://www.nhlbi.nih.gov/files/docs/guidelines/asthma_qrg.pdf
+"[""high_hum_mold_match""]",Reduce indoor humidity and avoid damp or moldy spaces.,https://www.cdc.gov/mold-health/about/index.html
+"[""exercise"", ""low_risk|elevated_risk""]",Use your pre-exercise treatment plan and warm up before activity.,https://www.nhlbi.nih.gov/files/docs/guidelines/asthma_qrg.pdf
+"[""pollen_mold""]","When pollen exposure is likely, keep windows closed and change clothes after being outside.",https://www.nhlbi.nih.gov/sites/default/files/publications/Asthma-Action-Plan-2020_rev_508.pdf

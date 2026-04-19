@@ -1,0 +1,11 @@
+fastapi
+openmeteo-requests
+requests-cache
+retry-requests
+numpy
+pandas
+sqlalchemy
+python-dotenv
+psycopg2-binary
+dotenv
+# will need to require python >= 3.11
