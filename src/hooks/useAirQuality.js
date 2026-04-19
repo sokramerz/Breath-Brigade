@@ -142,4 +142,5 @@ export default function useAirQuality(coords) {
 
   const riskLevel = getRiskLevel(aqiData?.aqi ?? 0);
   return { aqiData, riskLevel, isLoading, error };
-}
+}// forced change
+// forced change
