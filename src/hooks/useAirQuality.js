@@ -42,10 +42,14 @@ export default function useAirQuality(coords) {
   const pollenCache  = useRef("—");
 
   useEffect(() => {
-    if (!coords) return;
+    if (!coords) {
+      console.log("No coordinates yet");
+      return;
+    }
 
     const fetchAll = async () => {
       setIsLoading(true);
+      console.log("fetching air quality for:", coords);
       setError(null);
 
       const airnowKey   = import.meta.env.VITE_AIRNOW_KEY;
@@ -142,5 +146,5 @@ export default function useAirQuality(coords) {
 
   const riskLevel = getRiskLevel(aqiData?.aqi ?? 0);
   return { aqiData, riskLevel, isLoading, error };
-}// forced change
-// forced change
+}
+
