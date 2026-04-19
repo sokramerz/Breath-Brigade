@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from sqlalchemy import (
     create_engine, Column, Integer, Numeric,
     CheckConstraint, String, ForeignKey,
-    DateTime, func
+    DateTime, func, Table
 )
 from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy.dialects.postgresql import ARRAY
@@ -50,11 +50,19 @@ class UserProfile(Base):
     last_name = Column(String)
     zip_code = Column(Integer, ForeignKey("zip_geo.zip_code"))
     severity = Column(String)
-    triggers = Column(ARRAY(String)) # TODO: define what the triggers can be
+    triggers = Column(ARRAY(String))
 
     user = relationship("User", back_populates="profile")
     location = relationship("Location", back_populates="users_within")
 
+
+# table to store which recommendations each alert contained
+alerts_recs = Table(
+    "alerts_recs",
+    Base.metadata,
+    Column("alert_id", Integer, ForeignKey("alert_history.alert_id"), primary_key=True),
+    Column("rec_id", Integer, ForeignKey("recs.rec_id"), primary_key=True)
+)
 
 class Alert(Base):
     __tablename__ = "alert_history"
@@ -62,31 +70,19 @@ class Alert(Base):
     alert_id = Column(Integer, primary_key=True)
     date_time = Column(DateTime, server_default=func.now())
     user_id = Column(Integer, ForeignKey("users.user_id"))
-    alert_code = Column(Integer, ForeignKey("alert_types.alert_code")) # TODO: define set of alerts, each with a code and description
     zip_code = Column(Integer, ForeignKey("zip_geo.zip_code"))
 
     user = relationship("User", back_populates="alerts")
     location = relationship("Location", back_populates="alerts_within")
-    info = relationship("AlertType", back_populates="alerts")
-
-
-class AlertType(Base):
-    __tablename__ = "alert_types"
-
-    alert_code = Column(Integer, primary_key=True)
-    description = Column(String)
-
-    alerts = relationship("Alert", back_populates="info")
-
+    recs_sent = relationship("Recommendation", secondary=alerts_recs, back_populates="alerts_with_rec")
 
 class Recommendation(Base):
-    __tablename__ = "recommendations"
+    __tablename__ = "recs"
 
     rec_id = Column(Integer, primary_key=True)
-    drivers = Column(ARRAY(String, dimensions=2)) # list of lists of drivers that trigger this recommendation, e.g. [["aqi_red", "exercise"], ["thunder_pollen"]]
+    drivers = Column(ARRAY(String)) # list of lists of drivers that trigger this recommendation, e.g. [["aqi_red", "exercise"], ["thunder_pollen"]]
     recom = Column(String, nullable=False)
     sources = Column(ARRAY(String))
 
-    
-
+    alerts_with_rec = relationship("Alert", secondary=alerts_recs, back_populates="recs_sent")
     

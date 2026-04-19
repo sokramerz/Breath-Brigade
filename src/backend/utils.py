@@ -1,11 +1,13 @@
 import openmeteo_requests
+from typing import List
 
 import pandas as pd
 import requests_cache
 from retry_requests import retry
 
+from sqlalchemy import insert
 from sqlalchemy.orm import Session
-from .models import UserProfile
+from .models import UserProfile, Alert, alerts_recs
 
 
 def call_meteo(lat, lon):
@@ -50,5 +52,20 @@ def get_user_risk_info(db: Session, user_id: int):
     ).filter(
         UserProfile.user_id == user_id
     ).all()
+
+def record_alert(db: Session, user_id: int, rec_ids: List[int]): 
+    # TODO: have way of getting zip code from lat + lon to store in alert history
+    new_alert = Alert(user_id=user_id)
+    db.add(new_alert)
+    db.flush()
+
+    if rec_ids:
+        stmt = insert(alerts_recs).values([
+            {"alert_id": new_alert.alert_id, "rec_id": rec_id}
+            for rec_id in rec_ids
+        ])
+        db.execute(stmt)
+    
+    db.commit()
 
 

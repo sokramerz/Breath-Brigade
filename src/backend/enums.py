@@ -4,11 +4,11 @@
 from enum import StrEnum
 
 class RiskLevel(StrEnum):
-    LOW = "Low"
-    ELEVATED = "Elevated"
-    HIGH = "High"
-    VERY_HIGH = "Very High"
-    CRITICAL = "Critical"
+    LOW = "low"
+    ELEVATED = "elevated"
+    HIGH = "high"
+    VERY_HIGH = "very_high"
+    CRITICAL = "critical"
 
 class Severity(StrEnum):
     INTERMITTENT = "intermittent"

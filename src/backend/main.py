@@ -1,15 +1,15 @@
 from fastapi import FastAPI, Depends
 from .schemas import RiskRequest, RiskAssessment, RiskLevel
-from .utils import call_meteo, get_user_risk_info
+from .utils import call_meteo, get_user_risk_info, record_alert
 from .database import engine, get_db
 from .models import Base
 from sqlalchemy.orm import Session
+from .risk_engine import RiskEngine
 
 # create and add all tables defined in models to database
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine)
 
 api = FastAPI()
-
 
 @api.post("/risk", response_model=RiskAssessment)
 async def assess_risk(request: RiskRequest, db: Session = Depends(get_db)):
@@ -23,5 +23,10 @@ async def assess_risk(request: RiskRequest, db: Session = Depends(get_db)):
 
     severity, triggers = user_info[0]
 
-    # TODO: calculate risk assessment instead of returning mock response
-    return RiskAssessment(risk_level=RiskLevel.HIGH, recs=["Don't wear a jacket.", "Don't go to run club."])
+    rec_ids, risk_assessment = RiskEngine(
+        aqi=aqi, temp=temp, thunder=thunder, hum=hum,
+        severity=severity, triggers=triggers
+    ).assess()
+
+    record_alert(db, request.user_id, rec_ids)
+    return risk_assessment

@@ -1,5 +1,8 @@
 from typing import List
 from .enums import RiskLevel, Severity, Trigger
+import pandas as pd
+from .database import engine
+from .schemas import RiskAssessment
 
 class RiskEngine:
     # class attribute for severity baseline and multiplier
@@ -30,16 +33,16 @@ class RiskEngine:
         self.triggers = triggers
 
         self.drivers = {}
-        # add triggers as a driver with 0 points, to be used in recommendations
+        # add triggers as a driver with 1 points, to be used in recommendations
         if Trigger.EXERCISE in triggers:
-            self.drivers["exercise"] = 0
+            self.drivers["exercise"] = 1
         if Trigger.POLLEN_OUTDOOR_MOLD in triggers:
-            self.drivers["pollen_mold"] = 0
+            self.drivers["pollen_mold"] = 1
         
 
     
     def aqi_points(self):
-        points_cat = (
+        points_driver = (
             (0, "aqi_green") if self.aqi <= 50 else # green
             (2, "aqi_yellow") if self.aqi <= 100 else # yellow
             (8, "aqi_orange") if self.aqi <= 150 else # orange
@@ -47,28 +50,28 @@ class RiskEngine:
             (20, "aqi_purple") if self.aqi <= 300 else # purple
             (24, "aqi_maroon") # maroon
         )
-        self.drivers[points_cat[1]] = points_cat[0]
-        return points_cat[0]
+        self.drivers[points_driver[1]] = points_driver[0]
+        return points_driver[0]
     
     def temp_points(self):
-        points_cat = (
+        points_driver = (
             (0, "temp_green") if 10.0 <= self.temp <= 29.0 else
             (2, "temp_yellow") if 5.0 <= self.temp < 10.0 or 29.0 < self.temp <= 32.0 else
             (4, "temp_orange") if 0.0 <= self.temp < 5.0 or 32.0 < self.temp <= 37.0 else
             (6, "temp_red") # below 0 C or above 37 C
         )
-        self.drivers[points_cat[1]] = points_cat[0]
-        return points_cat[0]
+        self.drivers[points_driver[1]] = points_driver[0]
+        return points_driver[0]
     
     def hum_points(self):
-        points_cat = (
+        points_driver = (
             (0, "hum_green") if 30.0 <= self.hum <= 60.0 else
             (1, "hum_yellow") if 20.0 <= self.hum < 30.0 or 60.0 < self.hum <= 70.0 else
             (2, "hum_orange") if self.hum < 20.0 or 70.0 < self.hum <= 80.0 else
             (4, "hum_red") # above 80% humidity
         )
-        self.drivers[points_cat[1]] = points_cat[0]
-        return points_cat[0]
+        self.drivers[points_driver[1]] = points_driver[0]
+        return points_driver[0]
     
     def thunder_points(self):
         points = 1 if self.thunder else 0
@@ -86,7 +89,7 @@ class RiskEngine:
             inter_drivers["aqi_match_moderate"] = 2
 
         if self.aqi >= 100 and Trigger.OUTDOOR_POLLUTION_WILDFIRE_SMOKE in self.triggers:
-            inter_drivers["aqi_match_mild"] = 4
+            inter_drivers["aqi_match_high"] = 4
 
         if self.temp >= 30.0 and self.hum >= 70.0:
             inter_drivers["hot_hum_base"] = 4
@@ -116,7 +119,65 @@ class RiskEngine:
             self.thunder_points()
         )
         x = self.inter_points()
+
         risk_score = min(100, b + m * (w + min(x, self.INTERACTION_CAP)))
+
+        risk_level = (
+            RiskLevel.LOW if risk_score <= 19 else
+            RiskLevel.ELEVATED if risk_score <= 39 else
+            RiskLevel.HIGH if risk_score <= 59 else
+            RiskLevel.VERY_HIGH if risk_score <= 79 else
+            RiskLevel.CRITICAL
+        )
+
+        self.drivers[risk_level + "_risk"] = 1
+        return risk_level
+    
+    def get_recs(self):
+        recs_df = pd.read_sql("SELECT * FROM recs", con=engine)
+        recs_df["drivers"] = recs_df["drivers"].apply(lambda x: [dr.split("|") for dr in x])
+
+        points_contrib = []
+        for drivers_lists in recs_df["drivers"]:
+            points = 0
+            for drs in drivers_lists:
+                temp_points = sum([self.drivers[dr] for dr in drs if dr in self.drivers])
+                if temp_points == 0:
+                    points = 0
+                    break
+                points += temp_points
+            points_contrib.append(points)
+
+        # keep track of recommendations sent for alert_history table
+        ids_sent = []
+        
+        # filter for only recommendations that were activated
+        recs_df["points_contrib"] = points_contrib
+        recs_df = recs_df[recs_df["points_contrib"] > 0]
+
+        # core recommendations are first 5 rows in recs table, there should be only one active here
+        core_rec_df = recs_df[recs_df["rec_id"].isin([0, 1, 2, 3, 4])]
+        assert core_rec_df.shape[0] == 1, "There should be exactly one active core recommendation"
+        ids_sent.append(int(core_rec_df["rec_id"].iloc[0]))
+        core_rec = core_rec_df["recom"].iloc[0]
+
+        # driver recommendations are top 3 active recommendations outside of the core recs
+        driver_recs_df = recs_df[~recs_df["rec_id"].isin([0, 1, 2, 3, 4])]
+        driver_recs_df = driver_recs_df.sort_values(by="points_contrib", ascending=False).head(3)
+        ids_sent.extend(driver_recs_df["rec_id"].tolist())
+        driver_recs = driver_recs_df["recom"].tolist()
+
+        return ids_sent, core_rec, driver_recs
+
+    
+    def assess(self):
+        risk_level = self.calculate_risk()
+        rec_ids, core_rec, driver_recs = self.get_recs()
+        return rec_ids, RiskAssessment(
+            risk_level=risk_level,
+            core_rec=core_rec,
+            driver_recs=driver_recs
+        )
 
 
 
