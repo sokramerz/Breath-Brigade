@@ -8,6 +8,13 @@ export default function LocationSearch({ onSelectLocation }) {
   const [loading, setLoading] = useState(false);
   const debounceRef           = useRef(null);
 
+  //suggest popular locations
+  const popularLocations = [
+    { name: "Detroit, MI", lat: 42.3314, lon: -83.0458 },
+    { name: "New York, NY", lat: 40.7128, lon: -74.0060 },
+    { name: "Los Angeles, CA", lat: 34.0522, lon: -118.2437},
+  ]
+
   async function fetchSuggestions(value) {
     if (!value.trim()) { setResults([]); return; }
 
@@ -57,6 +64,7 @@ export default function LocationSearch({ onSelectLocation }) {
     setQuery("");
     setResults([]);
     setIsOpen(false);
+    
   }
 
   return (
@@ -77,6 +85,21 @@ export default function LocationSearch({ onSelectLocation }) {
         )}
         {loading && <span className={styles.spinner} />}
       </div>
+    
+      {isOpen && !query && ( //suggest popular locations drop down
+        <ul className = {styles.dropdown}>
+          {popularLocations.map((loc) => (
+            <li
+            key = {loc.name}
+            className= {styles.option}
+            onMouseDown={() => handleSelect(loc)}
+            >
+              <span className={styles.optionIcon}>📍</span>
+              <span className={styles.optionText}>{loc.name}</span>
+            </li>
+          ))}
+        </ul>
+      )}
 
       {isOpen && results.length > 0 && (
         <ul className={styles.dropdown}>
@@ -92,6 +115,7 @@ export default function LocationSearch({ onSelectLocation }) {
           ))}
         </ul>
       )}
+
 
       {isOpen && !loading && query && results.length === 0 && (
         <div className={styles.empty}>No results found for "{query}"</div>
