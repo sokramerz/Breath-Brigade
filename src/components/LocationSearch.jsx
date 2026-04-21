@@ -13,7 +13,11 @@ export default function LocationSearch({ onSelectLocation }) {
     { name: "Detroit, MI", lat: 42.3314, lon: -83.0458 },
     { name: "New York, NY", lat: 40.7128, lon: -74.0060 },
     { name: "Los Angeles, CA", lat: 34.0522, lon: -118.2437},
-  ]
+    { name: "Chicago, IL", lat: 41.8781, lon: -87.6298 },
+    { name: "Miami, FL", lat: 25.7617, lon: -80.1918},
+    { name: "Dallas, Tx", lat: 32.7767, long: -96.7970},
+    { name: "Seattle, WA", lat: 47.6062, lon: -122.3321},
+  ];
 
   async function fetchSuggestions(value) {
     if (!value.trim()) { setResults([]); return; }
@@ -77,7 +81,7 @@ export default function LocationSearch({ onSelectLocation }) {
           placeholder="Search any city or address…"
           value={query}
           onChange={handleChange}
-          onFocus={() => results.length && setIsOpen(true)}
+          onFocus={() => setIsOpen(true)}
           onBlur={() => setTimeout(() => setIsOpen(false), 150)}
         />
         {query && (
