@@ -57,10 +57,28 @@ export default function LocationSearch({ onSelectLocation }) {
     debounceRef.current = setTimeout(() => fetchSuggestions(value), 300);
   }
 
-  function handleSelect(result) {
+  async function handleSelect(result) {
     setQuery(result.name);
     setResults([]);
     setIsOpen(false);
+
+    try{
+      const rest = await fetch("http://127.0.0.1:8000/risk",{
+        method: "Post",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          lat:result.lat,
+          lon:result.lon,
+          user_id:1,
+        }),
+      });
+      const data = await res.json();
+      console.log("backend response", data);
+    } catch (err) {
+      console.error("error:", err);
+    }
     onSelectLocation?.(result);
   }
 

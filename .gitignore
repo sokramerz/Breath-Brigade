@@ -29,4 +29,9 @@ yarn-debug.log*
 yarn-error.log*
 
 # Temp dev files
-mock_db_entries.py
+mock_db_entries.py__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.env
+*.db
+.cache.sqlite

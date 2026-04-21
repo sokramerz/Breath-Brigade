@@ -5,11 +5,21 @@ from .database import engine, get_db
 from .models import Base
 from sqlalchemy.orm import Session
 from .risk_engine import RiskEngine
+from fastapi.middleware.cors import CORSMiddleware
 
 # create and add all tables defined in models to database
-# Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
 
 api = FastAPI()
+
+api.add_middleware(
+    CORSMiddleware,
+    allow_origins = ["*"],
+    allow_credentials = True,
+    allow_methods= ["*"],
+    allow_headers= ["*"],
+    
+)
 
 @api.post("/risk", response_model=RiskAssessment)
 async def assess_risk(request: RiskRequest, db: Session = Depends(get_db)):
