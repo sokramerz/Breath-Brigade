@@ -25,15 +25,17 @@
 
 .riskPanel {
   position: absolute;
-  bottom: 24px;
-  left: 16px;
+  bottom: 110px; /* Elevated to clear the NavBar */
+  left: 20px;
   z-index: 10;
+  max-width: 320px;
 }
 
 .legend {
   position: absolute;
-  bottom: 24px;
-  right: 16px;
+  bottom: 530px; /* Positioned above the riskPanel */
+  left: 20px;
+  right: auto;
   z-index: 10;
 }
 

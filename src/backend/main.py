@@ -24,19 +24,34 @@ api.add_middleware(
 @api.post("/risk", response_model=RiskAssessment)
 async def assess_risk(request: RiskRequest, db: Session = Depends(get_db)):
     weather_info = call_meteo(request.lat, request.lon)
-    user_info = get_user_risk_info(db, request.user_id)
+    
+    # Use provided info if available, otherwise hit DB
+    if request.severity is not None:
+        severity = request.severity
+        triggers = request.triggers or []
+    else:
+        user_info = get_user_risk_info(db, request.user_id)
+        if not user_info:
+            # Default fallback for demo if no user found
+            severity = "moderate_persistent"
+            triggers = ["Pollen or Outdoor Mold"]
+        else:
+            severity, triggers = user_info[0]
 
-    aqi = int(weather_info["us_aqi"])
-    temp = weather_info["temperature_2m"]
-    thunder = int(weather_info["weather_code"]) in [95, 96, 99]
-    hum = weather_info["relative_humidity_2m"]
-
-    severity, triggers = user_info[0]
+    aqi = int(weather_info.get("us_aqi", 0))
+    temp = weather_info.get("temperature_2m", 20)
+    thunder = int(weather_info.get("weather_code", 0)) in [95, 96, 99]
+    hum = weather_info.get("relative_humidity_2m", 50)
 
     rec_ids, risk_assessment = RiskEngine(
         aqi=aqi, temp=temp, thunder=thunder, hum=hum,
         severity=severity, triggers=triggers
     ).assess()
 
-    record_alert(db, request.user_id, rec_ids)
+    if request.user_id:
+        try:
+            record_alert(db, request.user_id, rec_ids)
+        except:
+            pass # Ignore DB errors for demo
+            
     return risk_assessment

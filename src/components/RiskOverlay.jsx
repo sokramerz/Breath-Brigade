@@ -74,6 +74,10 @@ export default function RiskOverlay({ riskLevel, aqiData, isLoading, error, stat
   );
 }
 
+  const personalized = aqiData?.personalizedRisk;
+  const advice = personalized?.core_rec || config.advice;
+  const driverRecs = personalized?.driver_recs || [];
+
   return (
     <div className={`${styles.card} glass-panel`} style={{ "--risk-color": config.color }}>
 
@@ -81,7 +85,7 @@ export default function RiskOverlay({ riskLevel, aqiData, isLoading, error, stat
       <div className={styles.header}>
         <span className={styles.pulseDot} />
         <span className={styles.riskLabel} style={{ color: config.color }}>
-          {config.label}
+          {personalized?.risk_level ? personalized.risk_level.replace('_', ' ') : config.label}
         </span>
         <button className={styles.locateMeBtn} onClick={onLocateMe} title="Re-center on my location">
           ◎
@@ -114,8 +118,21 @@ export default function RiskOverlay({ riskLevel, aqiData, isLoading, error, stat
         </div>
       </div>
 
-      {/* Advice */}
-      <p className={styles.advice}>{config.advice}</p>
+      {/* Personalized Advice */}
+      <div className={styles.adviceSection}>
+        <p className={styles.advice}>{advice}</p>
+        
+        {driverRecs.length > 0 && (
+          <ul className={styles.driverList}>
+            {driverRecs.map((rec, i) => (
+              <li key={i} className={styles.driverItem}>
+                <span className={styles.driverBullet} />
+                {rec}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
       {formattedTime && (
         <p className={styles.timestamp}>Updated: {formattedTime}</p>

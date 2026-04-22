@@ -3,31 +3,29 @@ import styles from "./Profile.module.css";
 
 const SEVERITY_OPTIONS = [
   {
-    value: "mild",
+    value: "mild_persistent",
     label: "Mild",
     description: "Occasional symptoms, rarely limits activity",
   },
   {
-    value: "moderate",
+    value: "moderate_persistent",
     label: "Moderate",
     description: "Daily symptoms, some activity limitation",
   },
   {
-    value: "severe",
+    value: "severe_persistent",
     label: "Severe",
     description: "Continuous symptoms, severely limited activity",
   },
 ];
 
 const TRIGGERS = [
-  { id: "dust",      label: "Dust & Dust Mites", icon: "🌫️" },
-  { id: "pollen",    label: "Pollen",             icon: "🌿" },
-  { id: "cold_air",  label: "Cold Air",           icon: "🌬️" },
-  { id: "smoke",     label: "Smoke & Wildfire",   icon: "🔥" },
-  { id: "pets",      label: "Pet Dander",         icon: "🐾" },
-  { id: "mold",      label: "Mold & Mildew",      icon: "🍄" },
-  { id: "exercise",  label: "Exercise",           icon: "🏃" },
-  { id: "pollution", label: "Traffic Pollution",  icon: "🚗" },
+  { id: "Pollen or Outdoor Mold",    label: "Pollen",             icon: "🌿" },
+  { id: "Outdoor Pollution OR Wildfire Smoke",     label: "Smoke & Wildfire",   icon: "🔥" },
+  { id: "Cold Air",  label: "Cold Air",           icon: "🌬️" },
+  { id: "Heat or High Humidity",  label: "Heat & Humidity",    icon: "☀️" },
+  { id: "Indoor Mold or Dampness",      label: "Mold & Mildew",      icon: "🍄" },
+  { id: "Physical Exercise",  label: "Exercise",           icon: "🏃" },
 ];
 
 const THRESHOLD_OPTIONS = [
@@ -39,11 +37,16 @@ const THRESHOLD_OPTIONS = [
 // ==== Page =====
 
 export default function Profile() {
-  // TODO: load initial state from GET /api/user/profile on mount
-  const [severity,   setSeverity]   = useState("moderate");
-  const [triggers,   setTriggers]   = useState(["dust", "pollen"]);
-  const [threshold,  setThreshold]  = useState("high");
-  const [pushEnabled, setPushEnabled] = useState(true);
+  const [severity, setSeverity] = useState(() => localStorage.getItem("bf_severity") || "moderate_persistent");
+  const [triggers, setTriggers] = useState(() => {
+    const saved = localStorage.getItem("bf_triggers");
+    return saved ? JSON.parse(saved) : ["Pollen or Outdoor Mold"];
+  });
+  const [threshold, setThreshold] = useState(() => localStorage.getItem("bf_threshold") || "high");
+  const [pushEnabled, setPushEnabled] = useState(() => {
+    const saved = localStorage.getItem("bf_push");
+    return saved !== null ? JSON.parse(saved) : true;
+  });
   const [saved, setSaved] = useState(false);
 
   function toggleTrigger(id) {
@@ -53,21 +56,24 @@ export default function Profile() {
   }
 
   function handleSave() {
-    // TODO: PUT /api/user/profile with { severity, triggers, notificationThreshold: threshold }
-    console.log("Saving profile:", { severity, triggers, threshold, pushEnabled });
+    localStorage.setItem("bf_severity", severity);
+    localStorage.setItem("bf_triggers", JSON.stringify(triggers));
+    localStorage.setItem("bf_threshold", threshold);
+    localStorage.setItem("bf_push", JSON.stringify(pushEnabled));
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   }
 
   return (
     <div className={styles.page}>
+      <header className={styles.header}>
+        <h1 className={styles.title}>Health Profile</h1>
+        <p className={styles.subtitle}>Personalize your respiratory risk model for more accurate insights.</p>
+      </header>
 
-      {/* ─ Section: Asthma Severity ─ */}
+      {/* ── Section: Asthma Severity ── */}
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>Asthma Severity</h2>
-        <p className={styles.sectionHint}>
-          Your severity level tunes the risk scoring engine.
-        </p>
         <div className={styles.severityGroup}>
           {SEVERITY_OPTIONS.map((opt) => (
             <button
@@ -76,25 +82,20 @@ export default function Profile() {
                 severity === opt.value ? styles.severityCardActive : ""
               }`}
               onClick={() => setSeverity(opt.value)}
-              aria-pressed={severity === opt.value}
             >
-              <div
-                className={styles.severityIndicator}
-                data-level={opt.value}
-              />
-              <span className={styles.severityLabel}>{opt.label}</span>
-              <span className={styles.severityDesc}>{opt.description}</span>
+              <div className={styles.severityIndicator} data-level={opt.value} />
+              <div className={styles.severityInfo}>
+                <span className={styles.severityLabel}>{opt.label}</span>
+                <span className={styles.severityDesc}>{opt.description}</span>
+              </div>
             </button>
           ))}
         </div>
       </section>
 
-      {/* ─ Section: Known Triggers ─ */}
+      {/* ── Section: Known Triggers ── */}
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>Known Triggers</h2>
-        <p className={styles.sectionHint}>
-          Selected triggers are factored into your personalized advice.
-        </p>
         <div className={styles.triggerGrid}>
           {TRIGGERS.map((t) => {
             const active = triggers.includes(t.id);
@@ -105,7 +106,6 @@ export default function Profile() {
                   active ? styles.triggerChipActive : ""
                 }`}
                 onClick={() => toggleTrigger(t.id)}
-                aria-pressed={active}
               >
                 <span className={styles.triggerIcon}>{t.icon}</span>
                 <span className={styles.triggerLabel}>{t.label}</span>
@@ -115,32 +115,26 @@ export default function Profile() {
         </div>
       </section>
 
-      {/* ─ Section: Notification Preferences ─ */}
+      {/* ── Section: Notification Preferences ── */}
       <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>Notifications</h2>
+        <h2 className={styles.sectionTitle}>Alert Preferences</h2>
 
-        {/* Push toggle */}
         <div className={`${styles.toggleRow} glass-panel`}>
-          <div className={styles.toggleInfo}>
-            <span className={styles.toggleLabel}>Push Alerts</span>
-            <span className={styles.toggleDesc}>
-              Notify me when air quality changes
-            </span>
+          <div className={styles.severityInfo}>
+            <span className={styles.toggleLabel}>Push Notifications</span>
+            <span className={styles.toggleDesc}>Critical risk alerts & weekly forecasts</span>
           </div>
           <button
             className={`${styles.toggle} ${pushEnabled ? styles.toggleOn : ""}`}
             onClick={() => setPushEnabled((p) => !p)}
-            aria-checked={pushEnabled}
             role="switch"
           >
             <span className={styles.toggleThumb} />
           </button>
         </div>
 
-        {/* Threshold selector — only shown when push is enabled */}
         {pushEnabled && (
           <div className={styles.thresholdGroup}>
-            <p className={styles.sectionHint}>Alert threshold</p>
             {THRESHOLD_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
@@ -148,33 +142,21 @@ export default function Profile() {
                   threshold === opt.value ? styles.thresholdRowActive : ""
                 }`}
                 onClick={() => setThreshold(opt.value)}
-                aria-pressed={threshold === opt.value}
               >
-                <div
-                  className={styles.thresholdDot}
-                  data-level={opt.value}
-                />
-                <div className={styles.thresholdInfo}>
-                  <span className={styles.thresholdLabel}>{opt.label}</span>
-                  <span className={styles.thresholdDesc}>{opt.description}</span>
-                </div>
-                {threshold === opt.value && (
-                  <span className={styles.thresholdCheck}>✓</span>
-                )}
+                <span className={styles.thresholdLabel}>{opt.label} Level</span>
+                {threshold === opt.value && <span className={styles.thresholdCheck}>✓</span>}
               </button>
             ))}
           </div>
         )}
       </section>
 
-      {/* ─ Save button ─ */}
       <button
         className={`${styles.saveBtn} ${saved ? styles.saveBtnSuccess : ""}`}
         onClick={handleSave}
       >
-        {saved ? "Saved ✓" : "Save Profile"}
+        {saved ? "Profile Saved" : "Apply Changes"}
       </button>
-
     </div>
   );
 }

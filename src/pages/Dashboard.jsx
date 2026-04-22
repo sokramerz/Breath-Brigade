@@ -1,4 +1,6 @@
 import { useState } from "react";
+import useAirQuality from "../hooks/useAirQuality";
+import useLocation from "../hooks/useLocation";
 import {
   LineChart,
   Line,
@@ -109,19 +111,27 @@ function AlertRow({ timestamp, riskLevel, message }) {
 // ─ Page ─
 
 export default function Dashboard() {
-  // TODO: replace with real hook data
+  const { coords } = useLocation();
+  const { aqiData } = useAirQuality(coords);
+  
+  const locationName = aqiData?.stations?.[0]?.name || "Local Area";
+  
   const hourly = MOCK_HOURLY;
   const weekly = MOCK_WEEKLY;
   const alerts = MOCK_ALERTS;
 
-  const [alertFilter, setAlertFilter] = useState("all"); // "all" | "high" | "critical"
+  const [alertFilter, setAlertFilter] = useState("all");
 
   const filteredAlerts = alertFilter === "all"
     ? alerts
     : alerts.filter((a) => a.riskLevel === alertFilter);
 
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} animate-fade-up`}>
+      <header className={styles.header}>
+        <h1 className={styles.title}>BreatheFresh Dashboard</h1>
+        <p className={styles.subtitle}>Forecast and trends for <span className={styles.location}>{locationName}</span></p>
+      </header>
 
       {/* ── Section: 24h AQI Trend ── */}
       <section className={`${styles.card} glass-panel`}>

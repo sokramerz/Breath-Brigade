@@ -134,11 +134,25 @@ class RiskEngine:
         return risk_level
     
     def get_recs(self):
-        recs_df = pd.read_sql("SELECT * FROM recs", con=engine)
-        recs_df["drivers"] = recs_df["drivers"].apply(lambda x: [dr.split("|") for dr in x])
+        try:
+            recs_df = pd.read_sql("SELECT * FROM recs", con=engine)
+        except:
+            # Fallback to CSV for demo if DB table doesn't exist
+            import os
+            csv_path = os.path.join(os.path.dirname(__file__), "rec_defs.csv")
+            recs_df = pd.read_csv(csv_path)
+            
+        # Parse drivers column which is stored as pipe-separated strings in CSV or DB
+        def parse_drivers(d_str):
+            # If it's already a list of lists, return as is
+            if isinstance(d_str, list): return d_str
+            # Format is "dr1|dr2,dr3|dr4" -> [[dr1,dr2], [dr3,dr4]]
+            return [group.split("|") for group in str(d_str).split(",")]
+
+        recs_df["drivers_parsed"] = recs_df["drivers"].apply(parse_drivers)
 
         points_contrib = []
-        for drivers_lists in recs_df["drivers"]:
+        for drivers_lists in recs_df["drivers_parsed"]:
             points = 0
             for drs in drivers_lists:
                 temp_points = sum([self.drivers[dr] for dr in drs if dr in self.drivers])
