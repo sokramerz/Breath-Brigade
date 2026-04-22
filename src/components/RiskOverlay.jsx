@@ -1,4 +1,5 @@
 import styles from "./RiskOverlay.module.css";
+import { useEffect, useState } from "react";
 
 const RISK_CONFIG = {
   safe:     { label: "Safe",     color: "#00e5c3", advice: "Air quality is good. Enjoy your time outside!" },
@@ -9,6 +10,20 @@ const RISK_CONFIG = {
 
 export default function RiskOverlay({ riskLevel, aqiData, isLoading, error, statusMessage, onLocateMe }) {
   const config = RISK_CONFIG[riskLevel] ?? RISK_CONFIG.safe;
+  const [lastUpdated, setLastUpdated] = useState(null);
+
+  useEffect(() => {
+    if (aqiData) {
+      setLastUpdated(new Date());
+    }
+  }, [aqiData]);
+
+  const formattedTime = lastUpdated
+    ? lastUpdated.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : null;
 
   if (isLoading) {
     return (
@@ -101,6 +116,10 @@ export default function RiskOverlay({ riskLevel, aqiData, isLoading, error, stat
 
       {/* Advice */}
       <p className={styles.advice}>{config.advice}</p>
+
+      {formattedTime && (
+        <p className={styles.timestamp}>Updated: {formattedTime}</p>
+      )}
 
     </div>
   );
