@@ -6,6 +6,7 @@ export default function LocationSearch({ onSelectLocation }) {
   const [results, setResults] = useState([]);
   const [isOpen,  setIsOpen]  = useState(false);
   const [loading, setLoading] = useState(false);
+  const [riskData, setRiskData] = useState(null);
   const debounceRef           = useRef(null);
 
   //suggest popular locations
@@ -15,8 +16,9 @@ export default function LocationSearch({ onSelectLocation }) {
     { name: "Los Angeles, CA", lat: 34.0522, lon: -118.2437},
     { name: "Chicago, IL", lat: 41.8781, lon: -87.6298 },
     { name: "Miami, FL", lat: 25.7617, lon: -80.1918},
-    { name: "Dallas, Tx", lat: 32.7767, long: -96.7970},
+    { name: "Dallas, Tx", lat: 32.7767, lon: -96.7970},
     { name: "Seattle, WA", lat: 47.6062, lon: -122.3321},
+    { name: "New Delhi, India", lat: 28.6139, lon: 77.2090}
   ];
 
   async function fetchSuggestions(value) {
@@ -63,8 +65,8 @@ export default function LocationSearch({ onSelectLocation }) {
     setIsOpen(false);
 
     try{
-      const rest = await fetch("http://127.0.0.1:8000/risk",{
-        method: "Post",
+      const res = await fetch("http://127.0.0.1:8000/risk",{
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
@@ -76,6 +78,7 @@ export default function LocationSearch({ onSelectLocation }) {
       });
       const data = await res.json();
       console.log("backend response", data);
+      setRiskData(data);
     } catch (err) {
       console.error("error:", err);
     }
@@ -87,6 +90,13 @@ export default function LocationSearch({ onSelectLocation }) {
     setResults([]);
     setIsOpen(false);
     
+  }
+  const formatRisk = (level) => {
+    if(level == "low") return "Good";
+    if(level == "moderate") return "Moderate";
+    if(level == "elevated") return "High";
+    if(level == "critical") return "Critical";
+    return level;
   }
 
   return (
@@ -141,6 +151,18 @@ export default function LocationSearch({ onSelectLocation }) {
 
       {isOpen && !loading && query && results.length === 0 && (
         <div className={styles.empty}>No results found for "{query}"</div>
+      )}
+      {riskData && (
+        <div style= {{
+          marginTop: "10px",
+          padding: "10px" ,
+          background: "#111",
+          borderRadius: "8px"
+        }}>
+          <p style={{color: "white"}}>
+            Risk Level: {formatRisk(riskData.risk_level)}
+          </p>
+          </div>
       )}
     </div>
   );
