@@ -88,6 +88,7 @@ function resolveStatusMessage(coords, locationError, isLoading) {
 export default function MapView() {
   const mapContainerRef = useRef(null);
   const mapRef          = useRef(null);
+  const [showWelcome, setShowWelcome] = useState(true);
 
   const { coords, locationError, requestLocation } = useLocation();
   const [searchCoords, setSearchCoords] = useState(null);
@@ -101,6 +102,15 @@ export default function MapView() {
   const [zoom,           setZoom]           = useState(11);
 
   const statusMessage = resolveStatusMessage(activeCoords, locationError, isLoading);
+
+  // Add timer
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowWelcome(false);
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   // Auto-request GPS on mount
   useEffect(() => {
@@ -194,14 +204,16 @@ mapRef.current.on("zoom", () => {
 
   return (
     <div className={styles.mapPage}>
+    {showWelcome && (
       <div className={styles.welcomeBanner}>
         <div className={styles.welcomeTitle}>
           Welcome to BREATHEfresh
         </div>
         <div className={styles.welcomeSubtitle}>
-        Track local air quality and risk in real time
+          Track local air quality and risk in real time
+        </div>
       </div>
-      </div>
+    )}
       <div ref={mapContainerRef} className={styles.mapCanvas} aria-label="Air quality map" />
       {/* Ambient atmosphere — breathing glow that reacts to risk level */}
 <div
