@@ -194,6 +194,9 @@ mapRef.current.on("zoom", () => {
 
   return (
     <div className={styles.mapPage}>
+      <div className={styles.welcomeBanner}>
+        Welcome to BREATHEfresh
+      </div>
       <div ref={mapContainerRef} className={styles.mapCanvas} aria-label="Air quality map" />
       {/* Ambient atmosphere — breathing glow that reacts to risk level */}
 <div
