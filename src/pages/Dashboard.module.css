@@ -47,6 +47,7 @@
   color: var(--text-secondary);
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  text-align: center;
   margin: 0 0 16px;
 }
 
@@ -72,6 +73,7 @@
   color: var(--text-secondary);
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  text-align: center;
   margin: 0;
 }
 
@@ -110,7 +112,7 @@
 
 .forecastCard {
   flex: 0 0 auto;
-  min-width: 72px;
+  min-width: 85px;
   padding: 14px 10px;
   border-radius: 14px;
   display: flex;
