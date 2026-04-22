@@ -11,71 +11,97 @@ import styles from "./MapView.module.css";
 
 mapboxgl.accessToken = import.meta.env.VITE_MAP_TOKEN;
 
+// ── Heatmap layer: weighted by AQI so colors accurately reflect air quality ──
 const AQI_HEATMAP_LAYER = {
   id: "aqi-heatmap",
   type: "heatmap",
   source: "aqi-stations",
+  maxzoom: 13,
   paint: {
     "heatmap-weight": [
       "interpolate", ["linear"], ["get", "aqi"],
       0,   0,
-      50,  0.5,
-      100, 0.8,
-      150, 1.0,
-      300, 1.0,
+      50,  0.08,
+      100, 0.3,
+      150, 0.65,
+      200, 1.0,
+      300, 2.0,
     ],
     "heatmap-intensity": [
       "interpolate", ["linear"], ["zoom"],
-      0,  3,
-      5,  6,
-      10, 10,
-      15, 16,
+      0, 1.5,
+      9, 2.5,
     ],
     "heatmap-radius": [
       "interpolate", ["linear"], ["zoom"],
-      0,  80,
-      5,  100,
-      10, 140,
-      15, 180,
+      0,  60,
+      5,  90,
+      9,  130,
     ],
-    "heatmap-opacity": 0.95,
+    "heatmap-opacity": 0.85,
     "heatmap-color": [
       "interpolate", ["linear"], ["heatmap-density"],
       0,    "rgba(0,0,0,0)",
-      0.05, "rgba(0,255,210,0.5)",
-      0.2,  "rgba(0,255,195,0.9)",
-      0.4,  "rgba(255,210,0,1.0)",
-      0.6,  "rgba(255,100,20,1.0)",
-      0.8,  "rgba(230,40,40,1.0)",
-      1.0,  "rgba(255,0,100,1.0)",
+      0.05, "rgba(0,229,195,0.4)",
+      0.15, "rgba(0,229,195,1.0)",
+      0.45, "rgba(255,213,0,1.0)",
+      0.75, "rgba(255,100,20,1.0)",
+      1.0,  "rgba(220,38,38,1.0)",
     ],
   },
 };
 
-// Interpolates extra points between real stations to create a denser heatmap
-function interpolateStations(stations = []) {
-  if (stations.length === 0) return [];
+// ── Circle dots at street level ──
+const AQI_CIRCLE_LAYER = {
+  id: "aqi-circles",
+  type: "circle",
+  source: "aqi-stations",
+  minzoom: 10,
+  paint: {
+    "circle-radius": [
+      "interpolate", ["linear"], ["zoom"],
+      10, 8,
+      13, 14,
+      16, 20,
+    ],
+    "circle-color": [
+      "interpolate", ["linear"], ["get", "aqi"],
+      0,   "#00e5c3",
+      50,  "#00e5c3",
+      51,  "#ffd500",
+      100, "#ffd500",
+      101, "#ff6414",
+      150, "#ff6414",
+      151, "#dc2626",
+    ],
+    "circle-stroke-color": "rgba(0,0,0,0.5)",
+    "circle-stroke-width": 1.5,
+    "circle-opacity": [
+      "interpolate", ["linear"], ["zoom"],
+      10, 0,
+      12, 1,
+    ],
+  },
+};
 
-  const interpolated = [...stations];
-
-  for (let i = 0; i < stations.length; i++) {
-    for (let j = i + 1; j < stations.length; j++) {
-      const a = stations[i];
-      const b = stations[j];
-
-      // Add 4 interpolated points between every pair of real stations
-      for (let t = 0.2; t < 1; t += 0.2) {
-        interpolated.push({
-          id:  `interp-${i}-${j}-${t}`,
-          lat: a.lat + (b.lat - a.lat) * t,
-          lon: a.lon + (b.lon - a.lon) * t,
-          aqi: Math.round(a.aqi + (b.aqi - a.aqi) * t),
-        });
-      }
-    }
-  }
-
-  return interpolated;
+// ── Convert station array to valid GeoJSON ──
+function stationsToGeoJSON(stations) {
+  return {
+    type: "FeatureCollection",
+    features: (stations || [])
+      .filter(s => s && !isNaN(Number(s.lat)) && !isNaN(Number(s.lon)))
+      .map(s => ({
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [Number(s.lon), Number(s.lat)],
+        },
+        properties: {
+          aqi:  Number(s.aqi),
+          name: s.name || "",
+        },
+      })),
+  };
 }
 
 function resolveStatusMessage(coords, locationError, isLoading) {
@@ -88,7 +114,6 @@ function resolveStatusMessage(coords, locationError, isLoading) {
 export default function MapView() {
   const mapContainerRef = useRef(null);
   const mapRef          = useRef(null);
-  const [showWelcome, setShowWelcome] = useState(true);
 
   const { coords, locationError, requestLocation } = useLocation();
   const [searchCoords, setSearchCoords] = useState(null);
@@ -103,21 +128,11 @@ export default function MapView() {
 
   const statusMessage = resolveStatusMessage(activeCoords, locationError, isLoading);
 
-  // Add timer
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowWelcome(false);
-    }, 4000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Auto-request GPS on mount
   useEffect(() => {
     requestLocation();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Initialize map
+  // Initialize map once
   useEffect(() => {
     if (mapRef.current) return;
 
@@ -133,32 +148,74 @@ export default function MapView() {
         style: "mapbox://styles/mapbox/dark-v11",
         center: [-74.006, 40.7128],
         zoom: 11,
+        pitch: 45,
+        bearing: -17.6,
         attributionControl: false,
+        antialias: true,
       });
 
       mapRef.current.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-left");
       mapRef.current.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "bottom-right");
 
       mapRef.current.on("load", () => {
-  if (!mapRef.current.getSource("aqi-stations")) {
-    mapRef.current.addSource("aqi-stations", {
-      type: "geojson",
-      data: stationsToGeoJSON([]),
-    });
-    mapRef.current.addLayer(AQI_HEATMAP_LAYER);
-  }
-  setMapLoaded(true);
-});
+        // 3D Terrain
+        mapRef.current.addSource("mapbox-dem", {
+          type: "raster-dem",
+          url:  "mapbox://mapbox.mapbox-terrain-dem-v1",
+          tileSize: 512,
+          maxzoom: 14,
+        });
+        mapRef.current.setTerrain({ source: "mapbox-dem", exaggeration: 1.5 });
 
-// Re-fetch AQI for wherever the map is centered after panning/zooming
-mapRef.current.on("moveend", () => {
-  const center = mapRef.current.getCenter();
-  setSearchCoords({ lat: center.lat, lon: center.lng });
-});
+        // 3D Buildings
+        const layers       = mapRef.current.getStyle().layers;
+        const labelLayerId = layers.find(
+          l => l.type === "symbol" && l.layout["text-field"]
+        )?.id;
 
-mapRef.current.on("zoom", () => {
-  setZoom(Math.round(mapRef.current.getZoom()));
-});
+        mapRef.current.addLayer(
+          {
+            id: "3d-buildings",
+            source: "composite",
+            "source-layer": "building",
+            filter: ["==", "extrude", "true"],
+            type: "fill-extrusion",
+            minzoom: 15,
+            paint: {
+              "fill-extrusion-color": "#2a3b4d",
+              "fill-extrusion-height": [
+                "interpolate", ["linear"], ["zoom"],
+                15, 0, 15.05, ["get", "height"],
+              ],
+              "fill-extrusion-base": [
+                "interpolate", ["linear"], ["zoom"],
+                15, 0, 15.05, ["get", "min_height"],
+              ],
+              "fill-extrusion-opacity": 0.8,
+            },
+          },
+          labelLayerId
+        );
+
+        // AQI source + layers — empty to start, filled when data arrives
+        mapRef.current.addSource("aqi-stations", {
+          type: "geojson",
+          data: { type: "FeatureCollection", features: [] },
+        });
+        mapRef.current.addLayer(AQI_HEATMAP_LAYER);
+        mapRef.current.addLayer(AQI_CIRCLE_LAYER);
+
+        setMapLoaded(true);
+      });
+
+      mapRef.current.on("moveend", () => {
+        const center = mapRef.current.getCenter();
+        setSearchCoords({ lat: center.lat, lon: center.lng });
+      });
+
+      mapRef.current.on("zoom", () => {
+        setZoom(Math.round(mapRef.current.getZoom()));
+      });
     };
 
     requestAnimationFrame(init);
@@ -169,17 +226,19 @@ mapRef.current.on("zoom", () => {
     };
   }, []);
 
-  // Fly to GPS coords when they arrive
+  // Fly to GPS location when it arrives
   useEffect(() => {
     if (!mapRef.current || !coords) return;
     flyTo(coords.lat, coords.lon);
   }, [coords]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Update heatmap when AQI data changes
+  // Push AQI data into the map source whenever it updates
   useEffect(() => {
     if (!mapLoaded || !mapRef.current) return;
     const source = mapRef.current.getSource("aqi-stations");
-    source?.setData(stationsToGeoJSON(aqiData?.stations ?? []));
+    if (source) {
+      source.setData(stationsToGeoJSON(aqiData?.stations ?? []));
+    }
   }, [aqiData, mapLoaded]);
 
   const flyTo = useCallback((lat, lon, zoom = 13) => {
@@ -204,28 +263,18 @@ mapRef.current.on("zoom", () => {
 
   return (
     <div className={styles.mapPage}>
-    {showWelcome && (
-      <div className={styles.welcomeBanner}>
-        <div className={styles.welcomeTitle}>
-          Welcome to BREATHEfresh
-        </div>
-        <div className={styles.welcomeSubtitle}>
-          Track local air quality and risk in real time
-        </div>
-      </div>
-    )}
       <div ref={mapContainerRef} className={styles.mapCanvas} aria-label="Air quality map" />
-      {/* Ambient atmosphere — breathing glow that reacts to risk level */}
-<div
 
-  className={styles.atmosphere}
-  style={{ "--risk-color": {
-    safe:     "rgba(0,229,195,0.06)",
-    moderate: "rgba(245,197,24,0.07)",
-    high:     "rgba(255,123,46,0.09)",
-    critical: "rgba(229,53,53,0.12)",
-  }[riskLevel] ?? "rgba(0,229,195,0.06)" }}
-/>
+      <div
+        className={styles.atmosphere}
+        style={{ "--risk-color": {
+          safe:     "rgba(0,229,195,0.06)",
+          moderate: "rgba(245,197,24,0.07)",
+          high:     "rgba(255,123,46,0.09)",
+          critical: "rgba(229,53,53,0.12)",
+        }[riskLevel] ?? "rgba(0,229,195,0.06)" }}
+      />
+
       <div className={styles.searchBar}>
         <LocationSearch onSelectLocation={handleSelectLocation} />
       </div>
@@ -254,7 +303,7 @@ mapRef.current.on("zoom", () => {
       </button>
 
       {showMarkers &&
-        aqiData?.stations?.map((station) => (
+        aqiData?.stations?.map(station => (
           <MapMarker
             key={station.id}
             map={mapRef.current}
