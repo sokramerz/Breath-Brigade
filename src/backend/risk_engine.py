@@ -139,16 +139,18 @@ class RiskEngine:
         except:
             # Fallback to CSV for demo if DB table doesn't exist
             import os
+            from ast import literal_eval
             csv_path = os.path.join(os.path.dirname(__file__), "rec_defs.csv")
-            recs_df = pd.read_csv(csv_path)
-            
-        # Parse drivers column which is stored as pipe-separated strings in CSV or DB
-        def parse_drivers(d_str):
-            # If it's already a list of lists, return as is
-            if isinstance(d_str, list): return d_str
-            # Format is "dr1|dr2,dr3|dr4" -> [[dr1,dr2], [dr3,dr4]]
-            return [group.split("|") for group in str(d_str).split(",")]
+            recs_df = pd.read_csv(csv_path, converters={"drivers": literal_eval})
+            recs_df["sources"] = recs_df["sources"].apply(lambda x: x.split("|"))
+            recs_df.insert(0, "rec_id", recs_df.index)
 
+            
+        # Parse drivers column which is stored as a LIST OF pipe-separated strings in CSV or DB
+        def parse_drivers(drivers):
+            return [drs.split("|") for drs in drivers]
+        # Format is ["driver1|driver2", "driver3|driver4"]
+        # to represent ( (driver1 OR driver2) AND (driver3 OR driver4) )
         recs_df["drivers_parsed"] = recs_df["drivers"].apply(parse_drivers)
 
         points_contrib = []
