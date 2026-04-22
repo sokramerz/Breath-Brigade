@@ -40,6 +40,7 @@ export default function useAirQuality(coords) {
       
       console.log("[BreatheFresh] Fetching AirNow:", airnowUrl);
       const observations = await safeFetch(airnowUrl) ?? [];
+      console.log("observations:", observations);
       console.log("[BreatheFresh] AirNow returned", observations.length, "observations");
 
       if (!isMounted) return;
@@ -54,12 +55,17 @@ export default function useAirQuality(coords) {
           name: o.ReportingArea,
         }));
 
+      console.log("stations:", stations);
+      console.log("first station name:", stations[0]?.name);
+
       const pm25Obs = observations.find(o => o.ParameterName === "PM2.5");
       const pm25    = pm25Obs ? Math.round(Number(pm25Obs.AQI)) : null;
       const mainAqi = stations[0]?.aqi ?? 0;
+      const city = stations[0]?.name || null;
 
       // Push stations to state immediately — heatmap renders now
       if (isMounted) setAqiData({ stations, aqi: mainAqi, pm25 });
+      console.log("city being set:", city);
 
       // ── 2. Open-Meteo weather + air quality in parallel (secondary) ──
       const [weather, pollenData] = await Promise.all([

@@ -21,12 +21,14 @@
   color: var(--text-primary);
   letter-spacing: -0.02em;
   margin-bottom: 4px;
+  text-align: center;
 }
 
 .subtitle {
   font-size: 14px;
   color: var(--text-secondary);
   line-height: 1.5;
+  text-align: center;
 }
 
 .location {

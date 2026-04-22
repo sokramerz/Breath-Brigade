@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useAirQuality from "../hooks/useAirQuality";
 import useLocation from "../hooks/useLocation";
 import {
@@ -111,8 +111,12 @@ function AlertRow({ timestamp, riskLevel, message }) {
 // ─ Page ─
 
 export default function Dashboard() {
-  const { coords } = useLocation();
+  const { coords, requestLocation } = useLocation();
   const { aqiData } = useAirQuality(coords);
+  
+  useEffect(() => {
+    requestLocation();
+  }, [requestLocation]);
   
   const locationName = aqiData?.stations?.[0]?.name || "Local Area";
   
