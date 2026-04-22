@@ -33,13 +33,31 @@ export default function RiskOverlay({ riskLevel, aqiData, isLoading, error, stat
   }
 
   if (error) {
-    return (
-      <div className={`${styles.card} glass-panel`}>
-        <p className={styles.statusMsg}>Could not load air quality data.</p>
-        <button className={styles.locateBtn} onClick={onLocateMe}>Retry</button>
+  return (
+    <div className={`${styles.card} glass-panel`}>
+      <p className={styles.statusMsg}>
+  {error?.message || "Unable to load air quality data."}
+</p>
+
+      <p className={styles.subMsg}>
+        Check your connection or try another location.
+      </p>
+
+      <div className={styles.errorActions}>
+        <button className={styles.locateBtn} onClick={onLocateMe}>
+          Retry
+        </button>
+
+        <button
+          className={styles.secondaryBtn}
+          onClick={() => window.location.reload()}
+        >
+          Refresh
+        </button>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   return (
     <div className={`${styles.card} glass-panel`} style={{ "--risk-color": config.color }}>
