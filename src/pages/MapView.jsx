@@ -159,12 +159,15 @@ export default function MapView() {
 
       mapRef.current.on("load", () => {
         // 3D Terrain
+      if (!mapRef.current.getSource("mapbox-dem")) {
         mapRef.current.addSource("mapbox-dem", {
           type: "raster-dem",
           url:  "mapbox://mapbox.mapbox-terrain-dem-v1",
           tileSize: 512,
           maxzoom: 14,
         });
+      }
+
         mapRef.current.setTerrain({ source: "mapbox-dem", exaggeration: 1.5 });
 
         // 3D Buildings
@@ -198,12 +201,20 @@ export default function MapView() {
         );
 
         // AQI source + layers — empty to start, filled when data arrives
+      if (!mapRef.current.getSource("aqi-stations")) {
         mapRef.current.addSource("aqi-stations", {
           type: "geojson",
           data: { type: "FeatureCollection", features: [] },
         });
+      }
+
+      if (!mapRef.current.getLayer("aqi-heatmap")) {
         mapRef.current.addLayer(AQI_HEATMAP_LAYER);
+      }
+
+      if (!mapRef.current.getLayer("aqi-circles")) {
         mapRef.current.addLayer(AQI_CIRCLE_LAYER);
+      }
 
         setMapLoaded(true);
       });
