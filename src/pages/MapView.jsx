@@ -195,11 +195,17 @@ mapRef.current.on("zoom", () => {
   return (
     <div className={styles.mapPage}>
       <div className={styles.welcomeBanner}>
-        Welcome to BREATHEfresh
+        <div className={styles.welcomeTitle}>
+          Welcome to BREATHEfresh
+        </div>
+        <div className={styles.welcomeSubtitle}>
+        Track local air quality and risk in real time
+      </div>
       </div>
       <div ref={mapContainerRef} className={styles.mapCanvas} aria-label="Air quality map" />
       {/* Ambient atmosphere — breathing glow that reacts to risk level */}
 <div
+
   className={styles.atmosphere}
   style={{ "--risk-color": {
     safe:     "rgba(0,229,195,0.06)",
