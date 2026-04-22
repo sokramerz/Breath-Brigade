@@ -32,12 +32,12 @@ export default function RiskOverlay({ riskLevel, aqiData, isLoading, error, stat
     );
   }
 
-  if (error) {
+if (error) {
   return (
     <div className={`${styles.card} glass-panel`}>
       <p className={styles.statusMsg}>
-  {error?.message || "Unable to load air quality data."}
-</p>
+        Unable to load live air quality data.
+      </p>
 
       <p className={styles.subMsg}>
         Check your connection or try another location.
