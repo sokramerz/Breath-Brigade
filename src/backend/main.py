@@ -5,6 +5,7 @@ from .database import engine, get_db
 from .models import Base
 from sqlalchemy.orm import Session
 from .risk_engine import RiskEngine
+from .enums import Severity, Trigger
 from fastapi.middleware.cors import CORSMiddleware
 
 # create and add all tables defined in models to database
@@ -33,8 +34,8 @@ async def assess_risk(request: RiskRequest, db: Session = Depends(get_db)):
         user_info = get_user_risk_info(db, request.user_id)
         if not user_info:
             # Default fallback for demo if no user found
-            severity = "moderate_persistent"
-            triggers = ["Pollen or Outdoor Mold"]
+            severity = Severity.MODERATE_PERSISTENT
+            triggers = [Trigger.POLLEN_OUTDOOR_MOLD, Trigger.HEAT_HIGH_HUMIDITY]
         else:
             severity, triggers = user_info[0]
 
